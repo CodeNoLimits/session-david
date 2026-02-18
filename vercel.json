@@ -1,5 +1,8 @@
 {
-  "version": 2,
+  "outputDirectory": "docs",
+  "framework": null,
+  "buildCommand": null,
+  "installCommand": null,
   "headers": [
     {
       "source": "/(.*)",

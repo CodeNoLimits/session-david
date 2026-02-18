@@ -1,26 +1,30 @@
-name: Daily Vercel Deploy
+name: Daily Deploy Vercel
+
 on:
   schedule:
-    - cron: '0 5 * * *'   # 05h00 UTC = 07h00 IST chaque matin
-  workflow_dispatch:       # Déclenchable manuellement depuis GitHub
+    - cron: '0 6 * * 0,1,2,3,4'
+  workflow_dispatch:
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
-      - name: Install Vercel CLI
-        run: npm install -g vercel
-
-      - name: Deploy to Vercel (production)
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Regenerate sidebar
+        run: python3 scripts/gen-sidebar.py
+      - name: Commit sidebar
+        run: |
+          git config user.email "bot@dreamnova.ai"
+          git config user.name "DreamNova Bot"
+          git add docs/_sidebar.md || true
+          git diff --staged --quiet || git commit -m "chore: sidebar $(date +%Y-%m-%d)"
+          git push || true
+      - name: Deploy Vercel
+        run: |
+          npm install -g vercel@latest
+          vercel deploy --prod --yes --token=$VERCEL_TOKEN --scope=team_cFMnWhLYnYGXm6ueTHBxAXqB
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-          VERCEL_ORG_ID: team_cFMnWhLYnYGXm6ueTHBxAXqB
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-        run: |
-          vercel --token=$VERCEL_TOKEN \
-            --scope=dream-ais-projects \
-            --prod \
-            --yes \
-            2>&1
