@@ -1,8 +1,5 @@
 #!/bin/bash
-# append-log.sh — Universal log appender (concurrent-safe via flock)
-# Usage: append-log.sh <agent-id> <event> <summary> [duration]
-# Appelé par tous les agents (Claude Code, OpenClaw, MemuBot, Runner)
-
+# append-log.sh — macOS-compatible (mkdir lock, pas flock)
 REPO="${HOME}/Desktop/session_david"
 AGENT="${1:-unknown}"
 EVENT="${2:-EVENT}"
@@ -14,23 +11,24 @@ TIME=$(date +%H:%M:%S)
 SESSION_ID="${AGENT}-$(date +%Y%m%d%H%M%S)"
 LOG_DIR="$REPO/docs/agents/$AGENT"
 LOG_FILE="$LOG_DIR/$DATE.md"
+LOCKDIR="$LOG_FILE.d"
 
 mkdir -p "$LOG_DIR"
 
-# flock: safe si même agent appelle en parallèle
-(
-  flock -x 200
-  cat >> "$LOG_FILE" << EOF
+# mkdir est atomique sur macOS — lock simple et fiable
+TRIES=0
+until mkdir "$LOCKDIR" 2>/dev/null; do
+  sleep 0.1
+  TRIES=$((TRIES+1))
+  [ $TRIES -gt 30 ] && break
+done
+trap "rmdir '$LOCKDIR' 2>/dev/null" EXIT
 
-## $TIME | $AGENT | $EVENT
+printf "\n## %s | %s | %s\n\n**Session-ID**: %s\n**Duration**: %s\n**Summary**: %s\n\n---\n" \
+  "$TIME" "$AGENT" "$EVENT" "$SESSION_ID" "$DURATION" "$SUMMARY" >> "$LOG_FILE"
 
-**Session-ID**: $SESSION_ID
-**Duration**: $DURATION
-**Summary**: $SUMMARY
+rmdir "$LOCKDIR" 2>/dev/null || true
+trap - EXIT
 
----
-EOF
-) 200>"$LOG_FILE.lock"
-
-# Commit non-bloquant (debounced)
+# Commit non-bloquant
 nohup bash "$REPO/scripts/commit-logs.sh" > /dev/null 2>&1 &
