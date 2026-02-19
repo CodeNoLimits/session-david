@@ -8,6 +8,7 @@
 
 **🤖 claude-code**
 - [Vue d'ensemble](agents/claude-code/)
+- [2026-02-19](agents/claude-code/2026-02-19)
 
 **🧠 memubot**
 - [Vue d'ensemble](agents/memubot/)
