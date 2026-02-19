@@ -61,3 +61,8 @@
 - [GitHub](https://github.com/CodeNoLimits/session-david)
 - [Plan SESSION DAVID](agents/SESSION_DAVID)
 - NUCLEUS: `~/NUCLEUS.md` (local, non publié)
+
+---
+> ⚠️ **Note deploy**: Limite Vercel atteinte aujourd'hui (100/jour). 
+> Site Vercel mis à jour automatiquement demain 08h00 IST via GitHub Actions.
+> Raw content: [GitHub](https://github.com/CodeNoLimits/session-david/tree/main/docs)
